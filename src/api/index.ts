@@ -1,4 +1,4 @@
-import { Router, Request, Response, request } from "express";
+import { Router, Request, Response } from "express";
 
 export const router = Router();
 
