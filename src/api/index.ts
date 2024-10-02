@@ -1,7 +1,6 @@
-import { Router, Request, Response } from "express";
+import { Router } from "express";
+import { setlistRouter } from "./setlist";
 
 export const router = Router();
 
-router.get('/', (req: Request, res: Response) => {
-  res.send('Coé.')
-})
+router.use("/api/setlist/", setlistRouter);
