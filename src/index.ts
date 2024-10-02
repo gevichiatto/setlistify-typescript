@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { router }  from "./api"
+import spotifySdk from "./services/SpotifySdk";
 
 dotenv.config({
 	path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
@@ -22,6 +23,18 @@ app.use(bodyParser.urlencoded({
 	
 app.use(cors<Request>(), router);
 
-app.listen(PORT, () => {
-  console.log(`[server]: Server is running at http://localhost:${PORT}`);
-});
+function startServer(): void {
+  try {
+    spotifySdk.authenticate();
+    console.log('Spotify SDK authenticated.');
+  } catch (error) {
+    console.error('Failed to authenticate the Spotify SDK.', error);
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`[server]: Server is running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();
