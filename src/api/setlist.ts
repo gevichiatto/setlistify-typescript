@@ -46,7 +46,7 @@ async function getMergedSpotifySetlist(setlist: SetlistFm): Promise<MergedSet> {
 
   for (const set of setlist.sets.set) {
     for (const song of set.song) {
-      trackPromisesList.push(spotifySdkInstance.search(`remaster%20track:${song.name}%20artist:${setlist.artist}`, queryType, "US", 1));
+      trackPromisesList.push(spotifySdkInstance.search(`remaster%20track:${song.name}%20artist:${setlist.artist.name}`, queryType, "US", 1));
     }
   }
 
