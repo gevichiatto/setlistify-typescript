@@ -1,7 +1,15 @@
+interface Artist {
+  mbid: string;
+  tmid: number;
+  name: string;
+  sortName: string;
+  disambiguation: string;
+  url: string;
+}
 interface Song {
   name: string;
-  with: object;
-  cover: object;
+  with: Artist;
+  cover: Artist;
   info: string;
   tape: boolean;
 }
@@ -13,14 +21,7 @@ interface Set {
 }
 
 interface SetlistFm {
-   artist: {
-    mbid: string;
-    tmid: number;
-    name: string;
-    sortName: string;
-    disambiguation: string;
-    url: string;
-  };
+  artist: Artist;
   venue: {
     city: {
       id: string;
