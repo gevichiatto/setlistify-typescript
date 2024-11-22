@@ -1,7 +1,7 @@
 import spotifySdk from "./SpotifySdk";
 import { SearchResults, ItemTypes } from "@spotify/web-api-ts-sdk";
 import Endpoints from "../endpoints/Endpoints";
-import SetlistFm from "../interfaces/Setlist.fm";
+import { SetlistFm, Song } from "../interfaces/Setlist.fm";
 import MergedSet from "../interfaces/MergedSet";
 
 export async function getSetlistFmBySetId(setID: string): Promise<SetlistFm> {
@@ -18,7 +18,15 @@ export async function getSetlistFmBySetId(setID: string): Promise<SetlistFm> {
   return setlist;
 }
 
-export async function getMergedSpotifySetlist(setlist: SetlistFm): Promise<MergedSet> {
+function getSpotifyTrackSearchQuery(artistName: string, song: Song, coversByOriginalArtist: boolean): string {
+  let resolvedArtistName = artistName;
+  if (song.cover && coversByOriginalArtist) {
+    resolvedArtistName = song.cover.name;
+  }
+  return `remaster%20track:${song.name}%20artist:${resolvedArtistName}`;
+}
+
+export async function getMergedSpotifySetlist(setlist: SetlistFm, includeTapes: boolean = false, coversByOriginalArtist: boolean = false): Promise<MergedSet> {
   const trackPromisesList: Promise<SearchResults<'track'[]>>[] = [];
   const queryType: ItemTypes[] = ["track"];
 
@@ -35,10 +43,13 @@ export async function getMergedSpotifySetlist(setlist: SetlistFm): Promise<Merge
 
   for (const set of setlist.sets.set) {
     for (const song of set.song) {
-      const trackInfoPromise = spotifySdkInstance.search(`remaster%20track:${song.name}%20artist:${setlist.artist.name}`, queryType, "US", 1);
-      const index = mergedSet.tracks.push({ songInfo: song }) - 1;
-      trackPromiseMap.push({ index, promise: trackInfoPromise });
-      trackPromisesList.push(trackInfoPromise);
+      if ((song.tape && includeTapes) || !song.tape) {
+        const searchQuery = getSpotifyTrackSearchQuery(setlist.artist.name, song, coversByOriginalArtist);
+        const trackInfoPromise = spotifySdkInstance.search(searchQuery, queryType, "US", 1);
+        const index = mergedSet.tracks.push({ songInfo: song }) - 1;
+        trackPromiseMap.push({ index, promise: trackInfoPromise });
+        trackPromisesList.push(trackInfoPromise);
+      }
     }
   }
 

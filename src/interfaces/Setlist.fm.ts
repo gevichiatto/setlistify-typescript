@@ -20,7 +20,7 @@ interface Set {
   song: Song[];
 }
 
-interface SetlistFm {
+export interface SetlistFm {
   artist: Artist;
   venue: {
     city: {
@@ -48,5 +48,3 @@ interface SetlistFm {
   eventDate: string;
   lastUpdated: string;
 }
-
-export default SetlistFm;
