@@ -6,7 +6,7 @@ interface Artist {
   disambiguation: string;
   url: string;
 }
-interface Song {
+export interface Song {
   name: string;
   with: Artist;
   cover: Artist;

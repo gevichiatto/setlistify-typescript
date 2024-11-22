@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import spotifySdk from "../services/SpotifySdk";
-import { SearchResults, ItemTypes, Track } from "@spotify/web-api-ts-sdk";
+import { SearchResults, ItemTypes } from "@spotify/web-api-ts-sdk";
 import Endpoints from "../endpoints/Endpoints";
 import SetlistFm from "../interfaces/Setlist.fm";
 import MergedSet from "../interfaces/MergedSet";
@@ -44,20 +44,21 @@ async function getMergedSpotifySetlist(setlist: SetlistFm): Promise<MergedSet> {
 
   const spotifySdkInstance = spotifySdk.getSpotifySdkInstance();
 
+  const trackPromiseMap: { index: number; promise: Promise<SearchResults<'track'[]>> }[] = [];
+
   for (const set of setlist.sets.set) {
     for (const song of set.song) {
-      trackPromisesList.push(spotifySdkInstance.search(`remaster%20track:${song.name}%20artist:${setlist.artist.name}`, queryType, "US", 1));
+      const trackInfoPromise = spotifySdkInstance.search(`remaster%20track:${song.name}%20artist:${setlist.artist.name}`, queryType, "US", 1);
+      const index = mergedSet.tracks.push({ songInfo: song }) - 1;
+      trackPromiseMap.push({ index, promise: trackInfoPromise });
+      trackPromisesList.push(trackInfoPromise);
     }
   }
 
-  await Promise.all(trackPromisesList).then(tracklist => {
-    const listOfSpotifyTracks: Track[] = [];
-    for (const track of tracklist) {
-      if (track.tracks?.items[0]) {
-        listOfSpotifyTracks.push(track.tracks?.items[0]);
-      }
-    }
-    mergedSet.tracks = listOfSpotifyTracks;
+  const resolvedTracks = await Promise.all(trackPromisesList);
+
+  trackPromiseMap.forEach(({ index }, i) => {
+    mergedSet.tracks[index].trackInfo = resolvedTracks[i];
   });
 
   return mergedSet;
