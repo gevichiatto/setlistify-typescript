@@ -1,22 +1,7 @@
 import spotifySdk from "./SpotifySdk";
 import { SearchResults, ItemTypes } from "@spotify/web-api-ts-sdk";
-import Endpoints from "../endpoints/Endpoints";
 import { SetlistFm, Song } from "../interfaces/Setlist.fm";
 import MergedSet from "../interfaces/MergedSet";
-
-export async function getSetlistFmBySetId(setID: string): Promise<SetlistFm> {
-  const setlistResponse = await fetch(Endpoints.setlistFmSetlistByID + setID, {
-    method: 'GET',
-    headers: {
-      'x-api-key': process.env.X_API_KEY as string,
-      'Accept': 'application/json'
-    }
-  });
-
-  const setlist: SetlistFm = await setlistResponse.json() as SetlistFm;
-
-  return setlist;
-}
 
 function getSpotifyTrackSearchQuery(artistName: string, song: Song, coversByOriginalArtist: boolean): string {
   let resolvedArtistName = artistName;
@@ -32,7 +17,7 @@ export async function getMergedSpotifySetlist(setlist: SetlistFm, includeTapes: 
 
   const mergedSet: MergedSet = {
     artist: setlist.artist.name,
-    city: setlist.venue.city.name,
+    city: setlist.venue?.city.name,
     eventDate: setlist.eventDate,
     tracks: []
   };

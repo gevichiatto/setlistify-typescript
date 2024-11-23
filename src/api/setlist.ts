@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
-import { getMergedSpotifySetlist, getSetlistFmBySetId } from "../services/SetlistService";
+import { getMergedSpotifySetlist } from "../services/SpotifyPlaylistsService";
+import { getSetlistFmBySetId } from "../services/Setlist.fm.Service";
 
 export const setlistRouter = Router();
 
