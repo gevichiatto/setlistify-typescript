@@ -1,4 +1,4 @@
-interface Artist {
+export interface Artist {
   mbid: string;
   tmid: number;
   name: string;
@@ -6,23 +6,31 @@ interface Artist {
   disambiguation: string;
   url: string;
 }
+
+export interface ArtistAPIResponse {
+  type: string;
+  itemsPerPage: number;
+  page: number;
+  total: number;
+  artist: Artist[];
+}
 export interface Song {
   name: string;
-  with: Artist;
-  cover: Artist;
-  info: string;
-  tape: boolean;
+  with?: Artist;
+  cover?: Artist;
+  info?: string;
+  tape?: boolean;
 }
 
-interface Set {
+export interface Set {
   name: string;
-  encore: number;
+  encore?: number;
   song: Song[];
 }
 
 export interface SetlistFm {
   artist: Artist;
-  venue: {
+  venue?: {
     city: {
       id: string;
       name: string;
@@ -35,16 +43,16 @@ export interface SetlistFm {
     id: string;
     name: string;
   };
-  tour: {
+  tour?: {
     name: string;
   };
   sets: {
     set: Set[]
   };
-  info: string;
-  url: string;
-  id: string;
-  versionId: string;
-  eventDate: string;
-  lastUpdated: string;
+  info?: string;
+  url?: string;
+  id?: string;
+  versionId?: string;
+  eventDate?: string;
+  lastUpdated?: string;
 }

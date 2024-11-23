@@ -7,8 +7,8 @@ interface MergedSong {
 }
 interface MergedSet {
   artist: string;
-  city: string;
-  eventDate: string;
+  city?: string;
+  eventDate?: string;
   tracks: MergedSong[];
 }
 
