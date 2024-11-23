@@ -1,5 +1,8 @@
-const Endpoints = {
-  setlistFmSetlistByID: 'https://api.setlist.fm/rest/1.0/setlist/',
+const SETLIST_FM_API = 'https://api.setlist.fm/rest';
+
+const SetlistFmEndpoints = {
+  setlistFmSetlistByID: `${SETLIST_FM_API}/1.0/setlist/`,
+  artistByArtistName: `${SETLIST_FM_API}/1.0/search/artists`,
 };
 
-export default Endpoints;
+export default SetlistFmEndpoints;
