@@ -11,13 +11,21 @@ festPrepRouter.get('/', async (req: Request, res: Response) => {
     return;
   }
 
-  const artistsArray = artistsList.split(",");
+  const includeTapes: boolean = req.query.includeTapes === "true";
+  const coversByOriginalArtist: boolean = req.query.coversByOriginalArtist === "true";
 
-  const artists = await getArtistsByNamesList(artistsArray);
+  try {
+    const artistsArray = artistsList.split(",");
+  
+    const artists = await getArtistsByNamesList(artistsArray);
+  
+    const setlists = await getSetlistsByScrappingArtists(artists);
 
-  const setlists = await getSetlistsByScrappingArtists(artists);
-
-  const mergedSetlists = await getMergedSetlistsFromSetlists(setlists);
-
-  res.send(mergedSetlists);
+    const mergedSetlists = await getMergedSetlistsFromSetlists(setlists, includeTapes, coversByOriginalArtist);
+  
+    res.send(mergedSetlists);
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error." });
+    console.log("Error rejected:", error);
+  }
 })

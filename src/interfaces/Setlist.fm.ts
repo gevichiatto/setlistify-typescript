@@ -1,10 +1,10 @@
 export interface Artist {
-  mbid: string;
-  tmid: number;
+  mbid?: string;
+  tmid?: number;
   name: string;
-  sortName: string;
-  disambiguation: string;
-  url: string;
+  sortName?: string;
+  disambiguation?: string;
+  url?: string;
 }
 
 export interface ArtistAPIResponse {

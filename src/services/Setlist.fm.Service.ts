@@ -31,7 +31,10 @@ export async function getArtistsByNamesList(artistName: string[]): Promise<Artis
     }).then(async (artistsResponse) => {
       const parsedArtistResponse: ArtistAPIResponse = await artistsResponse.json() as ArtistAPIResponse;
       return parsedArtistResponse.artist[0];
-    }))
+    }).catch((error) => {
+      console.error("Setlist.fm.Service.ts::getArtistsByNamesList - Error:", error);
+      throw new Error(error);
+    }));
   });
 
   const resolvedPromises = await Promise.all(artistResponsePromiseList);
@@ -41,7 +44,7 @@ export async function getArtistsByNamesList(artistName: string[]): Promise<Artis
 
 async function setlistFmScrapForAverageSetlist(artist: Artist): Promise<SetlistFm> {
   const URL_YEAR_SUFIX = '?year=2024';
-  const resolvedURL = artist.url.replace('setlists', 'stats/average-setlist') + URL_YEAR_SUFIX;
+  const resolvedURL = artist.url?.replace('setlists', 'stats/average-setlist') + URL_YEAR_SUFIX;
 
   const scrappedSet: Set = {
     name: 'main',
@@ -55,27 +58,55 @@ async function setlistFmScrapForAverageSetlist(artist: Artist): Promise<SetlistF
 
   return fetch(resolvedURL).then(async URLResponse => {
     if (!URLResponse.ok) {
-      throw new Error(`Failed to fetch the URL: ${URLResponse.statusText}`);
+      throw new Error(`Setlist.fm.Service.ts::setlistFmScrapForAverageSetlist - Failed to fetch the URL: ${URLResponse.statusText}`);
     }
-
+  
     const html = await URLResponse.text();
-
+  
     if (!html) {
-      throw new Error('Empty HTML content returned from the URL.');
+      throw new Error('Setlist.fm.Service.ts::setlistFmScrapForAverageSetlist - Empty HTML content returned from the URL.');
     }
-
+  
     const dom = new JSDOM(html);
-
     const document = dom.window.document;
+  
+    const songElements = document.querySelectorAll('.songPart');
+    const songs = Array.from(songElements).map(el => {
+      const songName = el.textContent?.trim() || '';
+      let isTape = false;
+      let isCover = false;
+      let coverArtistName = '';
+  
+      const parentRow = el.closest('li');
+      if (parentRow?.classList.contains('tape')) {
+        isTape = true;
+      }
+  
+      const coverSpan = el.parentElement?.querySelector('.infoPart');
+      if (coverSpan) {
+        isCover = true;
+        const coverText = coverSpan.textContent?.trim() || '';
+        const match = /\((.+)\)/.exec(coverText);
+        if (match) {
+          coverArtistName = match[1];
+        }
+      }
+  
+      return { songName, isTape, isCover, coverArtistName };
+    });
 
-    const songElements = document.querySelectorAll('.songLabel');
-    const songs = Array.from(songElements).map(el => el.textContent?.trim() || '');
 
-    songs.forEach(song => {
-      const newSong: Song = { name: song };
+    songs.forEach(({ songName, isTape, isCover, coverArtistName }) => {
+      const newSong: Song = {
+        name: songName,
+        tape: isTape
+      };
+      if (isCover) {
+        newSong.cover = { name: coverArtistName };
+      }
       averageSet.sets.set[0].song.push(newSong);
-    })
-
+    });
+  
     return averageSet;
   });
 }
@@ -91,10 +122,10 @@ export async function getSetlistsByScrappingArtists(artists: Artist[]): Promise<
   return resolvedScrappedURLs;
 }
 
-export async function getMergedSetlistsFromSetlists(setlists: SetlistFm[]): Promise<MergedSet[]> {
+export async function getMergedSetlistsFromSetlists(setlists: SetlistFm[], includeTapes: boolean = false, coversByOriginalArtist: boolean = false): Promise<MergedSet[]> {
   const mergedSetlistsPromiseList: Promise<MergedSet>[] = [];
   setlists.forEach(setlist => {
-    mergedSetlistsPromiseList.push(getMergedSpotifySetlist(setlist));
+    mergedSetlistsPromiseList.push(getMergedSpotifySetlist(setlist, includeTapes, coversByOriginalArtist));
   });
 
   const mergedSetlists = await Promise.all(mergedSetlistsPromiseList);
