@@ -1,8 +1,8 @@
 import SetlistFmEndpoints from "../endpoints/Endpoints";
 import MergedSet from "../interfaces/MergedSet";
 import { Artist, ArtistAPIResponse, SetlistFm, Set, Song } from "../interfaces/Setlist.fm";
-import { JSDOM } from 'jsdom';
 import { getMergedSpotifySetlist } from './SpotifyPlaylistsService';
+import { setlistFmScrapForAverageSetlistSongList } from './SetlistScrapService';
 
 export async function getSetlistFmBySetId(setID: string): Promise<SetlistFm> {
   const setlistResponse = await fetch(SetlistFmEndpoints.setlistFmSetlistByID + setID, {
@@ -56,59 +56,11 @@ async function setlistFmScrapForAverageSetlist(artist: Artist): Promise<SetlistF
     sets: { set: [scrappedSet] }
   }
 
-  return fetch(resolvedURL).then(async URLResponse => {
-    if (!URLResponse.ok) {
-      throw new Error(`Setlist.fm.Service.ts::setlistFmScrapForAverageSetlist - Failed to fetch the URL: ${URLResponse.statusText}`);
-    }
-  
-    const html = await URLResponse.text();
-  
-    if (!html) {
-      throw new Error('Setlist.fm.Service.ts::setlistFmScrapForAverageSetlist - Empty HTML content returned from the URL.');
-    }
-  
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
-  
-    const songElements = document.querySelectorAll('.songPart');
-    const songs = Array.from(songElements).map(el => {
-      const songName = el.textContent?.trim() || '';
-      let isTape = false;
-      let isCover = false;
-      let coverArtistName = '';
-  
-      const parentRow = el.closest('li');
-      if (parentRow?.classList.contains('tape')) {
-        isTape = true;
-      }
-  
-      const coverSpan = el.parentElement?.querySelector('.infoPart');
-      if (coverSpan) {
-        isCover = true;
-        const coverText = coverSpan.textContent?.trim() || '';
-        const match = /\((.+)\)/.exec(coverText);
-        if (match) {
-          coverArtistName = match[1];
-        }
-      }
-  
-      return { songName, isTape, isCover, coverArtistName };
-    });
+  const songList: Song[] = await setlistFmScrapForAverageSetlistSongList(resolvedURL);
 
+  averageSet.sets.set[0].song = songList;
 
-    songs.forEach(({ songName, isTape, isCover, coverArtistName }) => {
-      const newSong: Song = {
-        name: songName,
-        tape: isTape
-      };
-      if (isCover) {
-        newSong.cover = { name: coverArtistName };
-      }
-      averageSet.sets.set[0].song.push(newSong);
-    });
-  
-    return averageSet;
-  });
+  return averageSet;
 }
 
 export async function getSetlistsByScrappingArtists(artists: Artist[]): Promise<SetlistFm[]> {
