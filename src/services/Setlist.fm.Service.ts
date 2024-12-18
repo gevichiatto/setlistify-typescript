@@ -3,29 +3,37 @@ import MergedSet from "../interfaces/MergedSet";
 import { Artist, ArtistAPIResponse, SetlistFm, Set, Song } from "../interfaces/Setlist.fm";
 import { getMergedSpotifySetlist } from './SpotifyPlaylistsService';
 import { setlistFmScrapForAverageSetlistSongList } from './SetlistScrapService';
+import { ConfigService } from '@nestjs/config';
+
 
 export async function getSetlistFmBySetId(setID: string): Promise<SetlistFm> {
+  const configService = new ConfigService();
+  const X_API_KEY = configService.get<string>('X_API_KEY');
+  
   const setlistResponse = await fetch(SetlistFmEndpoints.setlistFmSetlistByID + setID, {
     method: 'GET',
     headers: {
-      'x-api-key': process.env.X_API_KEY as string,
+      'x-api-key': X_API_KEY,
       'Accept': 'application/json'
     }
   });
-
+  
   const setlist: SetlistFm = await setlistResponse.json() as SetlistFm;
-
+  
   return setlist;
 }
 
 export async function getArtistsByNamesList(artistName: string[]): Promise<Artist[]> {
+  const configService = new ConfigService();
+  const X_API_KEY = configService.get<string>('X_API_KEY');
+  
   const artistResponsePromiseList: Promise<Artist>[] = [];
 
   artistName.forEach(artist => {
     artistResponsePromiseList.push(fetch(SetlistFmEndpoints.artistByArtistName + `?artistName=${artist}&sort=relevance`, {
       method: 'GET',
       headers: {
-        'x-api-key': process.env.X_API_KEY as string,
+        'x-api-key': X_API_KEY,
         'Accept': 'application/json'
       },
     }).then(async (artistsResponse) => {
