@@ -5,7 +5,7 @@ import { SetlistFm } from '../../interfaces/Setlist.fm';
 
 @Injectable()
 export class SetlistService {
-  async getSetlistFmBySetId(setlistID: string) {
+  async getSetlistFmBySetId(setlistID: number) {
     return await getSetlistFmBySetId(setlistID);
   }
 

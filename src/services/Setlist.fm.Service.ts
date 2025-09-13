@@ -6,7 +6,7 @@ import { setlistFmScrapForAverageSetlistSongList } from './SetlistScrapService';
 import { ConfigService } from '@nestjs/config';
 
 
-export async function getSetlistFmBySetId(setID: string): Promise<SetlistFm> {
+export async function getSetlistFmBySetId(setID: number): Promise<SetlistFm> {
   const configService = new ConfigService();
   const X_API_KEY = configService.get<string>('X_API_KEY');
   

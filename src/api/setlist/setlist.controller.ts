@@ -1,4 +1,4 @@
-import { Controller, Get, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Query, BadRequestException, ParseBoolPipe, ParseIntPipe } from '@nestjs/common';
 import { SetlistService } from './setlist.service';
 
 @Controller('api/setlist')
@@ -7,19 +7,16 @@ export class SetlistController {
 
   @Get()
   async getSetlist(
-    @Query('setId') setlistID: string,
-    @Query('includeTapes') includeTapes: string,
-    @Query('coversByOriginalArtist') coversByOriginalArtist: string,
+    @Query('setId', ParseIntPipe) setlistID: number,
+    @Query('includeTapes', ParseBoolPipe) includeTapes: boolean,
+    @Query('coversByOriginalArtist', ParseBoolPipe) coversByOriginalArtist: boolean,
   ) {
-    if (!setlistID || setlistID.trim() === '') {
+    if (!setlistID) {
       throw new BadRequestException('Bad Request.');
     }
 
-    const includeTapesBool = includeTapes === 'true';
-    const coversByOriginalArtistBool = coversByOriginalArtist === 'true';
-
     const setlist = await this.setlistService.getSetlistFmBySetId(setlistID);
 
-    return await this.setlistService.getMergedSpotifySetlist(setlist, includeTapesBool, coversByOriginalArtistBool);
+    return await this.setlistService.getMergedSpotifySetlist(setlist, includeTapes, coversByOriginalArtist);
   }
 }
